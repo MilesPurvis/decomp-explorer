@@ -7,6 +7,8 @@ linked, so hovering a line traces it through the others and back to the source.
 All machine code and decompiler output is real: the examples are compiled with clang
 for x86-64 and ARM64 at `-O0`/`-O1`/`-O2`, stripped, and run through Ghidra headless.
 
+**Live:** https://milespurvis.github.io/decomp-explorer/
+
 ## Run
 
 ```sh
@@ -46,3 +48,12 @@ Homebrew location.
    `prototype`, plus `types` for any structs.
 3. Run `npm run data` and check the output. Ghidra's generated local names (`iVar1`,
    `local_18`, …) vary per build, so add `renamesByVariant` after you've seen them.
+
+## Deploy
+
+Every push to `main` builds the app and deploys it to GitHub Pages
+(`.github/workflows/pages.yml`). CI uses the checked-in data and doesn't run Ghidra.
+
+## License
+
+MIT
