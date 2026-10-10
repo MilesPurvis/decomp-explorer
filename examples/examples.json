@@ -1,0 +1,69 @@
+[
+  {
+    "id": "sum_evens",
+    "file": "sum_evens.c",
+    "title": "Loops & branches",
+    "lesson": "At -O0, Ghidra recovers an almost exact `for` loop, `% 2` included. At -O1 the `% 2` becomes a bit test (`& 1`) and the counter changes shape: x86-64 indexes the array, ARM64 walks a pointer and counts down. At -O2 the loop is vectorized to handle many numbers per iteration, and the same logic ends up buried under dozens of temporaries.",
+    "prototype": "int sum_evens(int *nums, int count);",
+    "renamesByVariant": {
+      "x86_64-O0": { "local_1c": "i", "local_18": "total" },
+      "arm64-O0": { "local_14": "i", "local_10": "total" },
+      "x86_64-O1": { "iVar1": "total", "uVar2": "i", "uVar3": "n" },
+      "arm64-O1": { "uVar1": "n", "iVar2": "total", "uVar3": "remaining" }
+    }
+  },
+  {
+    "id": "count_alive",
+    "file": "count_alive.c",
+    "title": "Structs",
+    "lesson": "Field names don't survive compilation. All the binary keeps are byte offsets like +0x14, +0x18 and +0x20. Once you define the struct, `*(float *)(param_1 + 0x18)` turns back into `p->health`. From -O1 on, `if (score >= 0) alive++` also becomes the branch-free `alive - (~score >> 31)`.",
+    "types": "struct Player { int id; char name[16]; int score; float health; struct Player *next; };",
+    "prototype": "int count_alive(struct Player *p);",
+    "renames": { "iVar1": "alive" },
+    "renamesByVariant": {
+      "x86_64-O0": { "local_14": "alive", "local_10": "cur" },
+      "arm64-O0": { "local_c": "alive", "local_8": "cur" }
+    }
+  },
+  {
+    "id": "factorial",
+    "file": "factorial.c",
+    "title": "Recursion",
+    "lesson": "At -O0 the function calls itself. From -O1 on, the compiler has turned the recursion into a plain loop, and -O2 unrolls that loop: 8 multiplies per pass on x86-64, 4 running products on ARM64. The decompiler can only show what's in the binary, not what you originally wrote.",
+    "prototype": "unsigned long factorial(unsigned int n);",
+    "renamesByVariant": {
+      "x86_64-O0": { "local_10": "result" },
+      "arm64-O0": { "local_18": "result" },
+      "x86_64-O1": { "uVar1": "result", "uVar2": "i" },
+      "arm64-O1": { "uVar1": "result", "uVar2": "i" },
+      "x86_64-O2": { "uVar1": "result", "uVar2": "i", "uVar3": "leftover", "lVar4": "offset" },
+      "arm64-O2": { "lVar8": "prod0", "lVar9": "prod1", "lVar10": "prod2", "lVar11": "prod3" }
+    }
+  },
+  {
+    "id": "check_password",
+    "file": "check_password.c",
+    "title": "Strings & imports",
+    "lesson": "Stripping removes your own function names, but calls into shared libraries (`_strlen`, `_strcmp`) and string literals (\"hunter2\") stay readable at every optimization level. Reverse engineers usually start from these.",
+    "prototype": "int check_password(const char *input);",
+    "renamesByVariant": {
+      "x86_64-O0": { "iVar1": "cmp", "sVar2": "len", "local_c": "ok" },
+      "arm64-O0": { "iVar1": "cmp", "sVar2": "len", "local_14": "ok" },
+      "x86_64-O1": { "uVar1": "ok", "iVar2": "cmp", "sVar3": "len" },
+      "x86_64-O2": { "uVar1": "ok", "iVar2": "cmp", "sVar3": "len" },
+      "arm64-O1": { "iVar1": "cmp", "uVar2": "ok", "sVar3": "len" },
+      "arm64-O2": { "iVar1": "cmp", "uVar2": "ok", "sVar3": "len" }
+    }
+  },
+  {
+    "id": "apply_op",
+    "file": "apply_op.c",
+    "title": "Switch statements",
+    "lesson": "On x86-64, clang compiles this `switch` to a jump table (an array of offsets plus one indirect `jmp`), and Ghidra rebuilds the `switch` from it. On ARM64 it emits a chain of compares at -O0 and branch-free `csel` trees once optimized. Same source, completely different shape, and the decompiler shows whichever one is actually in the binary.",
+    "prototype": "int apply_op(int op, int a, int b);",
+    "renamesByVariant": {
+      "x86_64-O0": { "local_24": "quotient", "local_c": "result" },
+      "arm64-O0": { "local_18": "quotient", "local_4": "result" }
+    }
+  }
+]
